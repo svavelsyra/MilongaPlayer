@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 import tkinter
-import tkinter.ttk
+import tkinter.ttk as ttk
 
 from playlist import pattern
 from playlist.fileplaylist import FilePlayList
@@ -17,22 +17,22 @@ class PlayList(tkinter.Frame):
         self.player_instance.get_track = self.get_track
 
         # Buttons
-        buttonbar = tkinter.ttk.Frame(master)
-        tkinter.ttk.Button(buttonbar,
-                           command=lambda: self.add_playlist('pattern'),
-                           text='Add Pattern Playlist').pack(side='left')
-        tkinter.ttk.Button(buttonbar,
-                           command=lambda: self.add_playlist('file'),
-                           text='Add File Playlist').pack(side='left')
+        buttonbar = ttk.Frame(master)
+        ttk.Button(buttonbar,
+                   command=lambda: self.add_playlist('pattern'),
+                   text='Add Pattern Playlist').pack(side='left')
+        ttk.Button(buttonbar,
+                   command=lambda: self.add_playlist('file'),
+                   text='Add File Playlist').pack(side='left')
 
         # Tabs
-        self.tabs = tkinter.ttk.Notebook(self)
+        self.tabs = ttk.Notebook(self)
         self.tabs.bind('<Button-3>', self.popup)
 
         # Packing
         buttonbar.pack(fill=tkinter.X)
         self.tabs.pack(fill=tkinter.BOTH, expand=1)
-        
+
         self.cashe = {}
         self.on_startup()
 
@@ -64,7 +64,7 @@ class PlayList(tkinter.Frame):
         widget = self.tabs.nametowidget(self.tabs.tabs()[clicked_tab])
         self.tabs.forget(clicked_tab)
         widget.destroy()
-              
+
     def on_startup(self):
         playlists = {'Pattern': PatternPlayList,
                      'File': FilePlayList}
@@ -81,7 +81,7 @@ class PlayList(tkinter.Frame):
                                                 self.cashe)
                     tab.pack(expand=1, fill=tkinter.BOTH)
                     self.tabs.add(tab, text=pl['name'])
-                
+
         except FileNotFoundError:
             self.log.warning('Could not find playlist data')
 
@@ -94,7 +94,7 @@ class PlayList(tkinter.Frame):
                          'playlists': playlists,
                          'version': 1},
                         fh)
-                
+
     def get_track(self, index=0):
         tab_name = self.tabs.select()
         widget = self.tabs.nametowidget(tab_name)
@@ -109,7 +109,7 @@ class PlayList(tkinter.Frame):
                                     self.cashe)
         p.pack(expand=1, fill=tkinter.BOTH)
         self.tabs.add(p, text='Playlist')
-         
+
     def load_playlists(self):
         playlist_types = {'pattern': PatternPlayList}
         if self.config.has_section('playlists'):

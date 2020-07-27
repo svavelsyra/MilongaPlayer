@@ -3,7 +3,7 @@ import logging
 import os
 import pickle
 import tkinter
-import tkinter.ttk
+import tkinter.ttk as ttk
 
 import convert
 import player
@@ -22,12 +22,17 @@ class Gui():
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         p = ContiniousPlayer(self.master, player_instance)
 
+        # Style
+        s = ttk.Style()
+        s.configure('TButton', padding=[5, 2, 5, 2])
+        s.configure('TNotebook.Tab', padding=[5, 2, 5, 5])
+
         # Playlists.
-        upper = tkinter.ttk.Frame(master)
+        upper = ttk.Frame(master)
         self.playlist = playlist.PlayList(upper, p, config)
-        
+
         # Player controlls.
-        bottom = tkinter.ttk.Frame(master)
+        bottom = ttk.Frame(master)
         self.controlls = PlayerControlls(bottom, p)
 
         # Status bar.
@@ -99,7 +104,7 @@ class Gui():
     def add_playlist(self, pl_type):
         self.playlist.add_playlist(pl_type)
 
-            
+
 class StatusBar(tkinter.Frame):
     def __init__(self, master, player_instance, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.StatusBar')
@@ -256,9 +261,9 @@ class PlayerControlls(tkinter.Frame):
         self.log.info('Initializing PlayerControlls')
         super().__init__(master, *args, **kwargs)
         self.player = player_instance
-        tkinter.Button(self, text='Play', command=self.player.play, padx=15).pack(side='left')
-        tkinter.Button(self, text='Stop', command=self.player.stop, padx=15).pack(side='left')
-        tkinter.Button(self, text='Next', command=self.player.next, padx=15).pack(side='left')
+        ttk.Button(self, text='Play', command=self.player.play).pack(side='left')
+        ttk.Button(self, text='Stop', command=self.player.stop).pack(side='left')
+        ttk.Button(self, text='Next', command=self.player.next).pack(side='left')
         self.log.info('Done initializing PlayerControlls')
 
 
