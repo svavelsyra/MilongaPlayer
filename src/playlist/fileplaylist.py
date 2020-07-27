@@ -23,6 +23,8 @@ class FilePlayList(tkinter.ttk.Frame):
 
         self.view = tkinter.ttk.Treeview(self, show='headings')
         self.view.bind('<ButtonPress-1>', self.on_click)
+        self.view.bind('<Control-ButtonPress-1>', self.on_ctrl_click)
+        self.view.bind('<Control-a>', self.select_all)
         self.view.bind('<B1-Motion>', self.on_move)
         self.view.bind('<Double-1>', self.on_dclick)
         self.view.bind('<Delete>', self.on_delete)
@@ -71,7 +73,8 @@ class FilePlayList(tkinter.ttk.Frame):
         if not path:
             return
         for root, dirs, files in os.walk(path):
-            self.add_files(files)
+            if files:
+                self.add_files([os.path.join(root, file) for file in files])
 
     def add_files(self, paths=None):
         paths = paths or tkinter.filedialog.askopenfilename(multiple=True,
@@ -109,7 +112,6 @@ class FilePlayList(tkinter.ttk.Frame):
                 self.view.set(item, column, value)
 
     def get_track(self, index=0):
-        selection = self.view.selection()
         self.current_index = self.current_index or self.view.get_children()[0]
         if index == 0:
             self.view.selection_set(self.current_index)
@@ -122,6 +124,15 @@ class FilePlayList(tkinter.ttk.Frame):
     def on_click(self, event):
         tv = event.widget
         tv.selection_set(tv.identify_row(event.y))
+
+    def on_ctrl_click(self, event):
+        iid = self.view.identify_row(event.y)
+        current_selection = self.view.selection()
+        return
+        if iid in current_selection:
+            self.view.selection_remove((iid, ))
+        else:
+            self.view.selection_add((iid, ))
 
     def on_move(self, event):
         tv = event.widget
@@ -138,5 +149,8 @@ class FilePlayList(tkinter.ttk.Frame):
         to_delete = self.view.selection()
         if self.current_index in to_delete:
             self.current_index = self.view.next(to_delete[-1]) or self.view.get_children()[0]
-        self.view.delete(to_delete)
+        self.view.delete(*to_delete)
+
+    def select_all(self, event):
+        self.view.selection_set(self.view.get_children())
             

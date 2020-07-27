@@ -1,6 +1,7 @@
 import ctypes
 import logging
 import os
+import time
 import vlc
 
 # Windows sleep behaviour constants
@@ -37,10 +38,14 @@ class Player():
         
     def play(self, track=None):
         if track:
+            if not os.path.exists(track):
+                return
             self.set_mrl(track)
         self.vlc.play()
+        start_time = time.monotonic() 
         while not self.is_playing():
-            pass
+            if time.monotonic() - start_time > 5:
+                return
 
     def stop(self):
         self.playing = False
