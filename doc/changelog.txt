@@ -1,0 +1,5 @@
+0.0.4	Breakout of playlist
+0.0.5	Pickling of playlists - Saving state, Change name of playlists, Pattern browser, New Pattern config format
+0.0.6	Button for adding playlist, Remove playlist right click context menu, able to remove paths from path window, change order, scrollbars in pattern browser.
+0.0.7	[BUG FIX] - current file is saved on close, stopped playing now correctly show 00:00:00 as time. [NEW FEATURES] - Automatic conversion from older .dat formats to newer ones, possible to update files
+1.0.0	First real release!, Added a normal playlist with basic functionality, some refactoring on where code lies in the code tree, makes previous .dat files incompatible

@@ -1,0 +1,22 @@
+FilePlayList
+	Multiple select - Add File
+	Multiple select - Add Folder - Not Possible with tkinter without serious hacking
+	Right click context menu
+	Better filtering of files
+
+PatternPlayList
+	Filtering of files
+
+PatternBrowser
+	Multiple select - Add Paths - Not Possible with tkinter without serious hacking
+	Rename of pattern in pattern browser should rename it in order to
+
+MilongaPlayer
+	Toggle play/pause text on play button
+	Customizable Key-Bindings
+
+Player
+	Do not crash when file is missing
+
+
+
