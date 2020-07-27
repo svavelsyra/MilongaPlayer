@@ -1,11 +1,9 @@
-import logging
-import os
-import tkinter
-import tkinter.simpledialog
+import logging import os import tkinter import tkinter.simpledialog
 import tkinter.ttk
 
 import pattern
 import patternbrowser
+### deprecated use __init__.py### 
 
 class PlayList(tkinter.Frame):
     def __init__(self, master, player_instance, config, *args, **kwargs):
@@ -19,10 +17,10 @@ class PlayList(tkinter.Frame):
         buttonbar = tkinter.ttk.Frame(master)
         tkinter.ttk.Button(buttonbar,
                            command=lambda: self.add_playlist('pattern'),
-                           text='Add pattern playlist').pack(side='left')
+                           text='Add Pattern Playlist', padx=15).pack(side='left')
         tkinter.ttk.Button(buttonbar,
                            command=lambda: self.add_playlist('file'),
-                           text='Add file playlist').pack(side='left')
+                           text='Add File Playlist', padx=15).pack(side='left')
 
         # Tabs
         self.tabs = tkinter.ttk.Notebook(self)
@@ -140,9 +138,9 @@ class FilePlayList(tkinter.ttk.Frame):
         buttons = tkinter.ttk.Frame(self)
         buttons.pack(fill=tkinter.X, side='top')
         tkinter.ttk.Button(
-            buttons, text='Add file', command=self.add_file).pack(side='left')
+            buttons, text='Add File', command=self.add_file, padx=15).pack(side='left')
         tkinter.ttk.Button(
-            buttons, text='Add folder', command=self.add_folder).pack(side='left')
+            buttons, text='Add Folder', command=self.add_folder, padx=15).pack(side='left')
         
 
         self.view = tkinter.ttk.Treeview(self, show='headings')

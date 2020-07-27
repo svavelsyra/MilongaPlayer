@@ -20,10 +20,10 @@ class PlayList(tkinter.Frame):
         buttonbar = tkinter.ttk.Frame(master)
         tkinter.ttk.Button(buttonbar,
                            command=lambda: self.add_playlist('pattern'),
-                           text='Add pattern playlist').pack(side='left')
+                           text='Add Pattern Playlist').pack(side='left')
         tkinter.ttk.Button(buttonbar,
                            command=lambda: self.add_playlist('file'),
-                           text='Add file playlist').pack(side='left')
+                           text='Add File Playlist').pack(side='left')
 
         # Tabs
         self.tabs = tkinter.ttk.Notebook(self)

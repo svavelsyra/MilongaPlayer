@@ -16,9 +16,9 @@ class FilePlayList(tkinter.ttk.Frame):
         buttons = tkinter.ttk.Frame(self)
         buttons.pack(fill=tkinter.X, side='top')
         tkinter.ttk.Button(
-            buttons, text='Add files', command=self.add_files).pack(side='left')
+            buttons, text='Add Files', command=self.add_files).pack(side='left')
         tkinter.ttk.Button(
-            buttons, text='Add folder', command=self.add_folder).pack(side='left')
+            buttons, text='Add Folder', command=self.add_folder).pack(side='left')
         
 
         self.view = tkinter.ttk.Treeview(self, show='headings')

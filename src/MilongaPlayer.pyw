@@ -256,9 +256,9 @@ class PlayerControlls(tkinter.Frame):
         self.log.info('Initializing PlayerControlls')
         super().__init__(master, *args, **kwargs)
         self.player = player_instance
-        tkinter.Button(self, text='Play', command=self.player.play).pack(side='left')
-        tkinter.Button(self, text='Stop', command=self.player.stop).pack(side='left')
-        tkinter.Button(self, text='Next', command=self.player.next).pack(side='left')
+        tkinter.Button(self, text='Play', command=self.player.play, padx=15).pack(side='left')
+        tkinter.Button(self, text='Stop', command=self.player.stop, padx=15).pack(side='left')
+        tkinter.Button(self, text='Next', command=self.player.next, padx=15).pack(side='left')
         self.log.info('Done initializing PlayerControlls')
 
 
