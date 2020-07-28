@@ -2,6 +2,7 @@ import configparser
 import logging
 import os
 import pickle
+import sys
 import tkinter
 import tkinter.ttk
 
@@ -9,7 +10,7 @@ import convert
 import player
 import playlist
 
-VERSION = '1.2.1'
+VERSION = '1.2.2'
 
 class Gui():
     def __init__(self, master, player_instance):
@@ -261,11 +262,26 @@ class PlayerControlls(tkinter.Frame):
         tkinter.Button(self, text='Next', command=self.player.next).pack(side='left')
         self.log.info('Done initializing PlayerControlls')
 
-
-
 if __name__ == '__main__':
-    convert.convert()
-    with player.Player() as p:
+    errors = []
+    version = sys.version_info
+    if not (version.major >= 3 and version.minor >= 8):
+        errors.append(f"Python version has to be 3.8 or above, it's currently {sys.version}")
+    if not 'vlc' in sys.modules:
+        errors.append('VLC module is required, see readme on how to install')
+    if errors:
         tk = tkinter.Tk()
-        gui = Gui(tk, p)
-        tk.mainloop()
+        tk.withdraw()
+        tkinter.messagebox.showerror("Error", '\n'.join(errors))
+        tk.destroy()
+    else:
+        try:
+            with player.Player() as p:
+                tk = tkinter.Tk()
+                gui = Gui(tk, p)
+                tk.mainloop()
+        except Exception as error:
+            tk = tkinter.Tk()
+            tk.withdraw()
+            tkinter.messagebox.showerror("Error", error)
+            tk.destroy()
