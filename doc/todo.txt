@@ -2,7 +2,6 @@ FilePlayList
 	Multiple select - Add Folder - Not Possible with tkinter without serious hacking
 	Right click context menu
 	Better filtering of files
-	Play random order
 
 PatternPlayList
 	Filtering of files

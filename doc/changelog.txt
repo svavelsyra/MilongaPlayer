@@ -5,3 +5,4 @@
 1.0.0	First real release!, Added a normal playlist with basic functionality, some refactoring on where code lies in the code tree, makes previous .dat files incompatible
 1.1.0	[BUG] - No longer hang on missing file. [FEATURES] - Multiple select in add files, Multiple select of playlist entries in fileplaylist, select all key binding in fileplaylist
 1.2.0	[BUG] - Handling of play on empty list. [FEATURES] - Random play is possible for fileplaylist.
+1.2.1	[BUG] - Renaming of pattern changes name in order as well

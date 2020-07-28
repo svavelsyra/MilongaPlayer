@@ -112,6 +112,12 @@ class PatternBrowser(Dialog):
                 self.patterns.data.pop(name)
                 self.patterns.delete(index)
                 self.add_pattern(result)
+                if name != result['name']:
+                    for index, entry in enumerate(self.order.get(0, tkinter.END)):
+                        if entry == name:
+                            self.order.delete(index)
+                            self.order.insert(index, result['name'])
+                            
 
     def name_available(self, name, ok_name=None):
         # Reserved name
@@ -197,7 +203,7 @@ class EditPattern(Dialog):
         self.name.set('Name')
         buttonbar = tkinter.Frame(master)
         buttonbar.pack(side='top', fill=tkinter.X)
-        add = tkinter.Button(buttonbar, command=self.add_paths, text='Add path')
+        add = tkinter.Button(buttonbar, command=self.add_path, text='Add path')
         add.pack(side='left')
         
         tkinter.Entry(master, textvariable=self.name).pack(
