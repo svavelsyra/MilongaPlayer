@@ -6,11 +6,10 @@ import sys
 import tkinter
 import tkinter.ttk
 
-import convert
 import player
 import playlist
 
-VERSION = '1.2.2'
+VERSION = '1.2.3'
 
 class Gui():
     def __init__(self, master, player_instance):
@@ -101,7 +100,7 @@ class Gui():
         self.playlist.add_playlist(pl_type)
 
             
-class StatusBar(tkinter.Frame):
+class StatusBar(tkinter.ttk.Frame):
     def __init__(self, master, player_instance, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.StatusBar')
         self.log.info('initializing Status Bar')
@@ -110,14 +109,14 @@ class StatusBar(tkinter.Frame):
         self.name = tkinter.StringVar()
         self.position = tkinter.IntVar()
         self.time = tkinter.StringVar()
-        tkinter.Label(self, textvar=self.time).pack()
+        tkinter.ttk.Label(self, textvar=self.time).pack()
         tkinter.Scale(self,
                       to=1000,
                       orient=tkinter.HORIZONTAL,
                       showvalue=0,
                       variable=self.position,
                       command=self.slider_callback).pack(fill=tkinter.X)
-        tkinter.Label(self, textvar=self.name).pack()
+        tkinter.ttk.Label(self, textvar=self.name).pack()
         self.log.info('Starting worker in Status Bar')
         self.worker()
         self.log.info('Status Bar initialization done')
@@ -248,7 +247,7 @@ class ContiniousPlayer():
         self.player_instance.play(track)
         self.master.after(100, self.worker)
 
-class PlayerControlls(tkinter.Frame):
+class PlayerControlls(tkinter.ttk.Frame):
     """
     Player controll buttons.
     """
@@ -257,9 +256,12 @@ class PlayerControlls(tkinter.Frame):
         self.log.info('Initializing PlayerControlls')
         super().__init__(master, *args, **kwargs)
         self.player = player_instance
-        tkinter.Button(self, text='Play', command=self.player.play).pack(side='left')
-        tkinter.Button(self, text='Stop', command=self.player.stop).pack(side='left')
-        tkinter.Button(self, text='Next', command=self.player.next).pack(side='left')
+        tkinter.ttk.Button(
+            self, text='Play', command=self.player.play).pack(side='left')
+        tkinter.ttk.Button(
+            self, text='Stop', command=self.player.stop).pack(side='left')
+        tkinter.ttk.Button(
+            self, text='Next', command=self.player.next).pack(side='left')
         self.log.info('Done initializing PlayerControlls')
 
 if __name__ == '__main__':

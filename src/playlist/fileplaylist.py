@@ -21,7 +21,8 @@ class FilePlayList(tkinter.ttk.Frame):
         tkinter.ttk.Button(
             buttons, text='Add folder', command=self.add_folder).pack(side='left')
         self.random = tkinter.IntVar()
-        tkinter.Checkbutton(buttons, variable=self.random, text='Random').pack(side='left')
+        tkinter.ttk.Checkbutton(
+            buttons, variable=self.random, text='Random').pack(side='left')
         
 
         self.view = tkinter.ttk.Treeview(self, show='headings')

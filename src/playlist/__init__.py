@@ -8,7 +8,7 @@ from playlist import pattern
 from playlist.fileplaylist import FilePlayList
 from playlist.patternplaylist import PatternPlayList
 
-class PlayList(tkinter.Frame):
+class PlayList(tkinter.ttk.Frame):
     def __init__(self, master, player_instance, config, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.PlayList')
         super().__init__(master, *args, **kwargs)

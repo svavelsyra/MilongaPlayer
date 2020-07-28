@@ -201,12 +201,12 @@ class EditPattern(Dialog):
         self.paths = []
         self.name = tkinter.StringVar()
         self.name.set('Name')
-        buttonbar = tkinter.Frame(master)
+        buttonbar = tkinter.ttk.Frame(master)
         buttonbar.pack(side='top', fill=tkinter.X)
-        add = tkinter.Button(buttonbar, command=self.add_path, text='Add path')
+        add = tkinter.ttk.Button(buttonbar, command=self.add_path, text='Add path')
         add.pack(side='left')
         
-        tkinter.Entry(master, textvariable=self.name).pack(
+        tkinter.ttk.Entry(master, textvariable=self.name).pack(
             side='top', fill=tkinter.X)
         tkinter.ttk.Label(master, text='Repeat number').pack(
             side='top', fill=tkinter.X)
@@ -214,7 +214,7 @@ class EditPattern(Dialog):
         self.number.set(3)
         sb = tkinter.ttk.Spinbox(master, to=100, textvariable=self.number)
         sb.pack(side='top', fill=tkinter.X)
-        self.path_frame = tkinter.Frame(master)
+        self.path_frame = tkinter.ttk.Frame(master)
         self.path_frame.pack(side='top', fill=tkinter.BOTH)
         if initial_data:
             self.name.set(initial_data['name'])
@@ -236,7 +236,8 @@ class EditPattern(Dialog):
             l.pack(side='left', fill=tkinter.X)
 
             # Close button.
-            b = tkinter.Button(f, text='X', relief='flat', command=lambda f=f: self.remove(f))
+            b = tkinter.ttk.Button(
+                f, text='X', relief='flat', command=lambda f=f: self.remove(f))
             b.pack(side='right')
 
     def remove(self, widget):

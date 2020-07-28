@@ -7,3 +7,4 @@
 1.2.0	[BUG] - Handling of play on empty list. [FEATURES] - Random play is possible for fileplaylist.
 1.2.1	[BUG] - Renaming of pattern changes name in order as well
 1.2.2	Adding startup checks.
+1.2.3	Changing to ttk widgets on some places where they where old tkinter widgets

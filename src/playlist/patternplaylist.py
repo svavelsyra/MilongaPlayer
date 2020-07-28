@@ -6,7 +6,7 @@ import tkinter.ttk
 from playlist import pattern
 from playlist import patternbrowser
 
-class PatternPlayList(tkinter.Frame):
+class PatternPlayList(tkinter.ttk.Frame):
     """
     Pattern playlist.
     """
