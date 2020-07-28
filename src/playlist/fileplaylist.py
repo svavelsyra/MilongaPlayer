@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import tkinter
 import tkinter.simpledialog
 import tkinter.ttk
@@ -19,6 +20,8 @@ class FilePlayList(tkinter.ttk.Frame):
             buttons, text='Add files', command=self.add_files).pack(side='left')
         tkinter.ttk.Button(
             buttons, text='Add folder', command=self.add_folder).pack(side='left')
+        self.random = tkinter.IntVar()
+        tkinter.Checkbutton(buttons, variable=self.random, text='Random').pack(side='left')
         
 
         self.view = tkinter.ttk.Treeview(self, show='headings')
@@ -42,7 +45,8 @@ class FilePlayList(tkinter.ttk.Frame):
                             'files': {},
                             'current_index': None,
                             'playlist': [],
-                            'columns': ['name']}
+                            'columns': ['name'],
+                            'settings': {}}
         for key in ('files', 'current_index', 'name'):
             setattr(self, key, startup_info[key])
         self.add_columns(startup_info['columns'])
@@ -50,6 +54,8 @@ class FilePlayList(tkinter.ttk.Frame):
             self.view.insert('', 'end', iid=iid, text=path)
             for key, value in values.items():
                 self.view.set(iid, key, value)
+        for setting in startup_info.get('settings', {}):
+            getattr(self, setting).set(startup_info['settings'][setting])
         try:
             self.view.selection_set(self.current_index)
             self.view.see(self.current_index)
@@ -66,6 +72,9 @@ class FilePlayList(tkinter.ttk.Frame):
             text = self.view.item(child, 'text')
             values = {key: self.view.set(child, key) for key in startup_info['columns']}
             startup_info['playlist'].append((child, text, values))
+        startup_info['settings'] = {}
+        for setting in ('random', ):
+            startup_info['settings'][setting] = getattr(self, setting).get()
         return startup_info
 
     def add_folder(self, path=None):
@@ -112,7 +121,14 @@ class FilePlayList(tkinter.ttk.Frame):
                 self.view.set(item, column, value)
 
     def get_track(self, index=0):
-        self.current_index = self.current_index or self.view.get_children()[0]
+        new_index = [self.current_index] or self.view.get_children() or [None]
+        self.current_index = new_index[0]
+        if not self.current_index:
+            return ''
+        if self.random.get():
+            self.current_index = random.choice(self.view.get_children())
+            index = 0
+        
         if index == 0:
             self.view.selection_set(self.current_index)
             self.view.see(self.current_index)
@@ -122,10 +138,17 @@ class FilePlayList(tkinter.ttk.Frame):
             return self.get_track(index-1)
             
     def on_click(self, event):
+        region = self.view.identify("region", event.x, event.y)
+        if region == 'heading':
+            # Do Sorting here
+            return
         tv = event.widget
         tv.selection_set(tv.identify_row(event.y))
 
     def on_ctrl_click(self, event):
+        region = self.view.identify("region", event.x, event.y)
+        if region == 'heading':
+            return
         iid = self.view.identify_row(event.y)
         current_selection = self.view.selection()
         return
@@ -140,6 +163,9 @@ class FilePlayList(tkinter.ttk.Frame):
         tv.move(tv.selection(), '', moveto)
 
     def on_dclick(self, event):
+        region = self.view.identify("region", event.x, event.y)
+        if region == 'heading':
+            return
         iid = self.view.identify('item', event.x, event.y)
         self.current_index = iid
         path = self.view.item(iid, 'text')

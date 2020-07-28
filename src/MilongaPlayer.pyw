@@ -9,7 +9,7 @@ import convert
 import player
 import playlist
 
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 
 class Gui():
     def __init__(self, master, player_instance):
