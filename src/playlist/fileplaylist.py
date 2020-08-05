@@ -28,10 +28,10 @@ class FilePlayList(tkinter.ttk.Frame):
         self.view = tkinter.ttk.Treeview(self, show='headings')
         self.view.bind('<ButtonPress-1>', self.on_click)
         self.view.bind('<Control-ButtonPress-1>', self.on_ctrl_click)
-        self.view.bind('<Control-a>', self.select_all)
+        #self.view.bind('<Control-a>', self.select_all)
         self.view.bind('<B1-Motion>', self.on_move)
         self.view.bind('<Double-1>', self.on_dclick)
-        self.view.bind('<Delete>', self.on_delete)
+        #¤self.view.bind('<Delete>', self.delete)
         self.view.pack(side='left', expand=1, fill=tkinter.BOTH)
         scrollbar = tkinter.ttk.Scrollbar(
             self, orient='vertical', command=self.view.yview)
@@ -172,7 +172,7 @@ class FilePlayList(tkinter.ttk.Frame):
         path = self.view.item(iid, 'text')
         self.player.play(path)
 
-    def on_delete(self, event):
+    def delete(self, event):
         to_delete = self.view.selection()
         if self.current_index in to_delete:
             self.current_index = self.view.next(to_delete[-1]) or self.view.get_children()[0]

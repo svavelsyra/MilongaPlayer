@@ -8,23 +8,26 @@ import tkinter.ttk
 
 import player
 import playlist
+import settings
 
-VERSION = '1.2.3'
+VERSION = '1.3.0'
 
 class Gui():
     def __init__(self, master, player_instance):
         self.init_ok = False
         self.master = master
         self.log = logging.getLogger('MilongaPlayer')
-        self.config_path = os.path.join(os.path.dirname(__file__), 'config.ini')
+        self.config_path = os.path.join(self.data_path, 'config.ini')
         config = self.load_config()
+        startup_info = self.on_startup()
         self.master.winfo_toplevel().title(f"Milonga Player {VERSION}")
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         p = ContiniousPlayer(self.master, player_instance)
 
         # Playlists.
         upper = tkinter.ttk.Frame(master)
-        self.playlist = playlist.PlayList(upper, p, config)
+        tkinter.Button(upper, command=self.configure, text='Settings').pack()
+        self.playlist = playlist.PlayList(upper, p, startup_info.get('playlists', {}))
         
         # Player controlls.
         bottom = tkinter.ttk.Frame(master)
@@ -38,8 +41,36 @@ class Gui():
         bottom.pack(fill=tkinter.X, side='bottom')
         self.playlist.pack(fill=tkinter.BOTH, expand=1, side='left')
         self.controlls.pack()
+
+        self.key_bindings()
+
         self.init_ok = True
         self.log.info('Initialization done!')
+
+    @property
+    def data_path(self):
+        if sys.platform == 'win32':
+            path = r'\AppData\Local\MilongaPlayer'
+        else:
+            path = '/.milongaplayer'
+        return os.path.expanduser(f'~{path}')
+
+    def key_bindings(self, value=None):
+        for section, value in self.settings['key_bindings'].items():
+            if 'playlist' in section.lower():
+                for name, binding in value:
+                    name = name.lower().replace(' ', '_')
+                    self.master.bind(
+                        binding,
+                        lambda event, name=name: self.playlist.key_event(name, event))
+
+    def configure(self):
+        new_settings = settings.SettingsDialog(self.master, 'Settings', self.settings)
+        if not new_settings.result:
+            return
+        for key, value in new_settings.result.items():
+            self.settings[key] = value
+            getattr(self, key)(value)
 
     def load_config(self):
         config = configparser.ConfigParser()
@@ -63,6 +94,18 @@ class Gui():
         self.master.state(state)
         return config
 
+    def on_startup(self, *args, **kwargs):
+        try:
+            path = os.path.join(self.data_path, 'startup_info.dat')
+            with open(path, 'br') as fh:
+                startup_info = pickle.load(fh)
+        except:
+            self.log.error('Error during startup:', exc_info=True)
+            startup_info = {}
+        for key, default in (('settings', settings.SettingsDialog.defaults()),):
+            setattr(self, key, startup_info['main'].get(key, default))
+        return startup_info
+            
     def on_close(self, *args, **kwargs):
         try:
             if not self.init_ok:
@@ -84,16 +127,22 @@ class Gui():
             config.set('window', 'width', str(self.master.winfo_width()))
             config.set('window', 'posx', str(self.master.winfo_x()))
             config.set('window', 'posy', str(self.master.winfo_y()))
-            self.log.debug('Done gathering close down info')
-            self.playlist.on_close(config)
+            self.log.debug('Done gathering close down info, saving...')
+            os.makedirs(self.data_path, exist_ok=True)
             with open(self.config_path, 'w') as fh:
                 config.write(fh)
                 self.log.debug(f'Close down info written to: {self.config_path}')
+            with open(os.path.join(self.data_path, 'startup_info.dat'), 'bw') as fh:
+                pickle.dump({'main': {'settings': self.settings},
+                             'playlists': self.playlist.on_close()},
+                            fh)
         except Exception as err:
             self.log.error('Something bad happened during shutdown', exc_info=True)
+        else:
+            self.log.info('Close down info saved successfully')
         finally:
             self.master.destroy()
-            self.log.info('Shutdown')
+            self.log.info('Shutting down!')
             logging.shutdown()
 
     def add_playlist(self, pl_type):
@@ -287,3 +336,4 @@ if __name__ == '__main__':
             tk.withdraw()
             tkinter.messagebox.showerror("Error", error)
             tk.destroy()
+            logging.getLogger('MilongaPlayer').error(error, exc_info=True)

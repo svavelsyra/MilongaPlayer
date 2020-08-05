@@ -9,10 +9,9 @@ from playlist.fileplaylist import FilePlayList
 from playlist.patternplaylist import PatternPlayList
 
 class PlayList(tkinter.ttk.Frame):
-    def __init__(self, master, player_instance, config, *args, **kwargs):
+    def __init__(self, master, player_instance, startup_info, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.PlayList')
         super().__init__(master, *args, **kwargs)
-        self.config = config
         self.player_instance = player_instance
         self.player_instance.get_track = self.get_track
 
@@ -34,7 +33,7 @@ class PlayList(tkinter.ttk.Frame):
         self.tabs.pack(fill=tkinter.BOTH, expand=1)
         
         self.cashe = {}
-        self.on_startup()
+        self.on_startup(startup_info)
 
     def popup(self, event):
         x = event.x
@@ -65,35 +64,26 @@ class PlayList(tkinter.ttk.Frame):
         self.tabs.forget(clicked_tab)
         widget.destroy()
               
-    def on_startup(self):
+    def on_startup(self, startup_info):
         playlists = {'Pattern': PatternPlayList,
                      'File': FilePlayList}
-        try:
-            with open('playlists.dat', 'br') as fh:
-                data = pickle.load(fh)
-                self.cashe = data['cashe']
-                for pl in data['playlists']:
-                    if not pl:
-                        continue
-                    tab = playlists[pl['type']](self.tabs,
-                                                self.player_instance,
-                                                pl,
-                                                self.cashe)
-                    tab.pack(expand=1, fill=tkinter.BOTH)
-                    self.tabs.add(tab, text=pl['name'])
-                
-        except FileNotFoundError:
-            self.log.warning('Could not find playlist data')
+        self.cashe = startup_info.get('cashe', {})
+        for pl in startup_info.get('playlists', []):
+            if not (pl and pl.get('type', '') in playlists):
+                continue
+            tab = playlists[pl['type']](self.tabs,
+                                        self.player_instance,
+                                        pl,
+                                        self.cashe)
+            tab.pack(expand=1, fill=tkinter.BOTH)
+            self.tabs.add(tab, text=pl.get('name', 'playlist'))
 
-    def on_close(self, config):
+    def on_close(self):
         playlists = [pl.on_close()
                      for pl in self.tabs.children.values()]
-
-        with open('playlists.dat', 'bw') as fh:
-            pickle.dump({'cashe': self.cashe,
-                         'playlists': playlists,
-                         'version': 1},
-                        fh)
+        return {'cashe': self.cashe,
+                'playlists': playlists,
+                'version': 1}
                 
     def get_track(self, index=0):
         tab_name = self.tabs.select()
@@ -110,20 +100,20 @@ class PlayList(tkinter.ttk.Frame):
         p.pack(expand=1, fill=tkinter.BOTH)
         self.tabs.add(p, text='Playlist')
          
-    def load_playlists(self):
-        playlist_types = {'pattern': PatternPlayList}
-        if self.config.has_section('playlists'):
-            self.log.info('Loading playlists')
-            for playlist in self.config.options('playlists'):
-                self.log.debug(f'Loading playlist entry: {playlist}')
-                pl = self.config.get('playlists', playlist).split(',')
-                name, playlist_type, *args = [x.strip() for x in pl]
-                try:
-                    self.log.debug(f'Loading playlist: {name}')
-                    p = playlist_types[playlist_type](
-                        self.tabs, self.player_instance, name, *args, cashe=self.cashe)
-                    p.pack(expand=1, fill=tkinter.BOTH)
-                    self.tabs.add(p, text=name)
-                    self.playlists.append(p)
-                except KeyError:
-                    self.log.warning(f'Faulty playlist type: {playlist_type}')
+    def key_event(self, target, event):
+        tab_name = self.tabs.select()
+        widget = self.tabs.nametowidget(tab_name)
+        try:
+            print(target, event)
+            getattr(widget, target)(event)
+        except AttributeError:
+            pass
+        
+
+    def select_all(self, event):
+        tab_name = self.tabs.select()
+        widget = self.tabs.nametowidget(tab_name)
+        try:
+            widget.select_all(event)
+        except AttributeError:
+            pass

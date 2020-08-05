@@ -3,7 +3,7 @@ import tkinter
 import tkinter.filedialog
 import tkinter.ttk
 
-from playlist.widgets import Dialog
+from widgets import Dialog
 
 class PatternBrowser(Dialog):
     def body(self, master, initial_data=None):
