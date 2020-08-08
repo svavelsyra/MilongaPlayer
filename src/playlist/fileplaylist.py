@@ -92,10 +92,13 @@ class FilePlayList(tkinter.ttk.Frame):
         """Add the files from folder to playlist."""
         path = path or tkinter.filedialog.askdirectory()
         if not path:
+            self.log.info('User canceled')
             return
         for root, dirs, files in os.walk(path):
             if files:
-                self.add_files([os.path.join(root, file) for file in files])
+                self.add_files(
+                    [os.path.join(root, file) for file in
+                     files if file.endswith('.mp3')])
 
     def add_files(self, paths=None):
         """Add one or more files to playlist."""
@@ -117,9 +120,11 @@ class FilePlayList(tkinter.ttk.Frame):
         # Preserve current column headers and their settings
         current_columns = list(self.view['columns'])
         current_columns = {key:self.view.heading(key) for key in current_columns}
+        self.log.info(f'Current columns: {current_columns}')
 
         self.view['columns'] = list(current_columns.keys()) + list(columns)
         for column in columns:
+            self.log.info('Adding column: {column}')
             self.view.heading(column, text=column.capitalize(), **kwargs)
 
         # Set saved column values for the already existing columns
