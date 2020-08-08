@@ -49,6 +49,7 @@ class Gui():
 
     @property
     def data_path(self):
+        """Path to where data is stored."""
         if sys.platform == 'win32':
             path = r'\AppData\Local\MilongaPlayer'
         else:
@@ -56,16 +57,21 @@ class Gui():
         return os.path.expanduser(f'~{path}')
 
     def key_bindings(self, value=None):
+        """Set keybindings."""
         for section, value in self.settings['key_bindings'].items():
+            self.log.debug('Handling keybindings for section: {section}')
             if 'playlist' in section.lower():
                 for name, binding in value:
                     name = name.lower().replace(' ', '_')
+                    self.log.debug('Setting {key=} for {binding=}')
                     self.master.bind(
                         binding,
                         lambda event, name=name: self.playlist.key_event(name, event))
 
     def configure(self):
+        """Configure settings."""
         new_settings = settings.SettingsDialog(self.master, 'Settings', self.settings)
+        self.log.info(f'New settings: {new_settings.result}')
         if not new_settings.result:
             return
         for key, value in new_settings.result.items():
@@ -73,6 +79,7 @@ class Gui():
             getattr(self, key)(value)
 
     def load_config(self):
+        """Load saved config from config file."""
         config = configparser.ConfigParser()
         config.read(self.config_path)
         log_level = config.get('logging', 'log_level', fallback='INFO')
@@ -95,18 +102,27 @@ class Gui():
         return config
 
     def on_startup(self, *args, **kwargs):
+        """
+        Run only once uppon startup.
+
+        Sets various saved states from last run.
+        """
         try:
             path = os.path.join(self.data_path, 'startup_info.dat')
+            self.log.info(f'Reading startup info from: {path}')
             with open(path, 'br') as fh:
                 startup_info = pickle.load(fh)
         except:
             self.log.error('Error during startup:', exc_info=True)
             startup_info = {}
         for key, default in (('settings', settings.SettingsDialog.defaults()),):
-            setattr(self, key, startup_info['main'].get(key, default))
+            value = startup_info['main'].get(key, default)
+            self.log.debug(f'Setting: self.{key} to {value}')
+            setattr(self, key, value)
         return startup_info
             
     def on_close(self, *args, **kwargs):
+        """Save state on close."""
         try:
             if not self.init_ok:
                 return
@@ -146,10 +162,13 @@ class Gui():
             logging.shutdown()
 
     def add_playlist(self, pl_type):
+        """Add playlist of the requested type."""
+        self.log.info(f'Addning playlist of type: {pl_type}')
         self.playlist.add_playlist(pl_type)
 
             
 class StatusBar(tkinter.ttk.Frame):
+    """Display status of play."""
     def __init__(self, master, player_instance, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.StatusBar')
         self.log.info('initializing Status Bar')
@@ -230,6 +249,7 @@ class ContiniousPlayer():
         self.log.info(f'Play: {track=}, {self.playing=}, {self.paused=}')
         if self.playing and not track:
             self.paused = not self.paused
+            self.log.debug(f'Setting pause to: {self.paused}')
             self.player_instance.set_pause(self.paused)
             return
         else:

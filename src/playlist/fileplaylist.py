@@ -6,6 +6,7 @@ import tkinter.simpledialog
 import tkinter.ttk
 
 class FilePlayList(tkinter.ttk.Frame):
+    """Standard playlist."""
     def __init__(
         self, master, player_instance, startup_info, cashe, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.PlayList.FilePlayList')
@@ -41,6 +42,7 @@ class FilePlayList(tkinter.ttk.Frame):
         self.on_startup(startup_info)
 
     def on_startup(self, startup_info):
+        """Run once on startup to set files and settings."""
         if not startup_info:
             startup_info = {'name': 'Playlist',
                             'files': {},
@@ -48,15 +50,22 @@ class FilePlayList(tkinter.ttk.Frame):
                             'playlist': [],
                             'columns': ['name'],
                             'settings': {}}
-        for key in ('files', 'current_index', 'name'):
-            setattr(self, key, startup_info[key])
-        self.add_columns(startup_info['columns'])
-        for iid, path, values in startup_info['playlist']:
+        for key, default in (('files', {}),
+                             ('current_index', None),
+                             ('name', 'Playlist')):
+            value = startup_info.get(key, default)
+            setattr(self, key, value)
+        value = startup_info.get('columns', ['name'])
+        self.log.info(f'Setting columns: {value}')
+        self.add_columns(value)
+        for iid, path, values in startup_info.get('playlist', []):
             self.view.insert('', 'end', iid=iid, text=path)
             for key, value in values.items():
                 self.view.set(iid, key, value)
-        for setting in startup_info.get('settings', {}):
-            getattr(self, setting).set(startup_info['settings'][setting])
+        for setting, default in (('random', False),):
+            value = startup_info.get('settings', {}).get(setting, default)
+            self.log.info(f'Setting self.{setting} to {value}')
+            getattr(self, setting).set(value)
         try:
             self.view.selection_set(self.current_index)
             self.view.see(self.current_index)
@@ -64,6 +73,7 @@ class FilePlayList(tkinter.ttk.Frame):
             pass
             
     def on_close(self):
+        """Run on close to save state and settings."""
         startup_info = {'type': 'File'}
         for key in ('files', 'current_index', 'name'):
             startup_info[key] = getattr(self, key)
@@ -79,6 +89,7 @@ class FilePlayList(tkinter.ttk.Frame):
         return startup_info
 
     def add_folder(self, path=None):
+        """Add the files from folder to playlist."""
         path = path or tkinter.filedialog.askdirectory()
         if not path:
             return
@@ -87,6 +98,7 @@ class FilePlayList(tkinter.ttk.Frame):
                 self.add_files([os.path.join(root, file) for file in files])
 
     def add_files(self, paths=None):
+        """Add one or more files to playlist."""
         paths = paths or tkinter.filedialog.askopenfilename(multiple=True,
                                                             filetypes=(('MP3', '*.mp3'),))
         for path in paths:
@@ -101,6 +113,7 @@ class FilePlayList(tkinter.ttk.Frame):
                     pass
         
     def add_columns(self, columns, **kwargs):
+        """Add data columns."""
         # Preserve current column headers and their settings
         current_columns = list(self.view['columns'])
         current_columns = {key:self.view.heading(key) for key in current_columns}
@@ -122,6 +135,12 @@ class FilePlayList(tkinter.ttk.Frame):
                 self.view.set(item, column, value)
 
     def get_track(self, index=0):
+        """
+        Get track to play.
+
+        Index > 0 gets that amount of tracks forward in list."""
+        # As get_children returns a list or '' a list is allways
+        # created with the or construct.
         new_index = [self.current_index] or self.view.get_children() or [None]
         self.current_index = new_index[0]
         if not self.current_index:
@@ -139,6 +158,11 @@ class FilePlayList(tkinter.ttk.Frame):
             return self.get_track(index-1)
             
     def on_click(self, event):
+        """
+        On left click in view.
+
+        Select single element in list.
+        """
         region = self.view.identify("region", event.x, event.y)
         if region == 'heading':
             # Do Sorting here
@@ -147,6 +171,11 @@ class FilePlayList(tkinter.ttk.Frame):
         tv.selection_set(tv.identify_row(event.y))
 
     def on_ctrl_click(self, event):
+        """
+        On ctrl-leftclick in view.
+
+        Multiselect.
+        """
         region = self.view.identify("region", event.x, event.y)
         if region == 'heading':
             return
@@ -159,11 +188,13 @@ class FilePlayList(tkinter.ttk.Frame):
             self.view.selection_add((iid, ))
 
     def on_move(self, event):
+        """Move element in list."""
         tv = event.widget
         moveto = tv.index(tv.identify_row(event.y))
         tv.move(tv.selection(), '', moveto)
 
     def on_dclick(self, event):
+        """On double click play that track."""
         region = self.view.identify("region", event.x, event.y)
         if region == 'heading':
             return
@@ -173,11 +204,13 @@ class FilePlayList(tkinter.ttk.Frame):
         self.player.play(path)
 
     def delete(self, event):
+        """Delete selection key binding."""
         to_delete = self.view.selection()
         if self.current_index in to_delete:
             self.current_index = self.view.next(to_delete[-1]) or self.view.get_children()[0]
         self.view.delete(*to_delete)
 
     def select_all(self, event):
+        """Select all keybinding."""
         self.view.selection_set(self.view.get_children())
             
