@@ -236,7 +236,7 @@ class EditPattern(Dialog):
             self.name.set(initial_data['name'])
             self.number.set(initial_data['number'])
             for path in initial_data['paths']:
-                self.add_path()
+                self.add_path(path)
 
     def add_path(self, path=None):
         """Add path to pattern."""
@@ -253,7 +253,8 @@ class EditPattern(Dialog):
             l.pack(side='left', fill=tkinter.X)
 
             # Close button.
-            b = tkinter.ttk.Button(
+            # ToDo: change to ttk button when a nice theme for close button exists
+            b = tkinter.Button(
                 f, text='X', relief='flat', command=lambda f=f: self.remove(f))
             b.pack(side='right')
 

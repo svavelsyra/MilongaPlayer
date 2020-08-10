@@ -116,7 +116,7 @@ class Gui():
             self.log.error('Error during startup:', exc_info=True)
             startup_info = {}
         for key, default in (('settings', settings.SettingsDialog.defaults()),):
-            value = startup_info['main'].get(key, default)
+            value = startup_info.get('main', {}).get(key, default)
             self.log.debug(f'Setting: self.{key} to {value}')
             setattr(self, key, value)
         return startup_info
