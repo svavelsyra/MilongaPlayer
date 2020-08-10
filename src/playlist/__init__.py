@@ -9,6 +9,7 @@ from playlist.fileplaylist import FilePlayList
 from playlist.patternplaylist import PatternPlayList
 
 class PlayList(tkinter.ttk.Frame):
+    """Root playlist frame."""
     def __init__(self, master, player_instance, startup_info, *args, **kwargs):
         self.log = logging.getLogger('MilongaPlayer.PlayList')
         super().__init__(master, *args, **kwargs)
@@ -36,6 +37,8 @@ class PlayList(tkinter.ttk.Frame):
         self.on_startup(startup_info)
 
     def popup(self, event):
+        """Popup menu on right click on tab."""
+        self.log.debug(f'Popup event: {event}')
         x = event.x
         y = event.y
         menu = tkinter.Menu(self, tearoff=0)
@@ -49,15 +52,18 @@ class PlayList(tkinter.ttk.Frame):
             menu.grab_release()
 
     def rename(self, x, y):
+        """Rename tab."""
         clicked_tab = self.tabs.tk.call(
             self.tabs._w, "identify", "tab", x, y)
         name = tkinter.simpledialog.askstring("Input", "Enter Name",
                                               parent=self)
         if name:
+            self.log.info(f'Renaming tab to: {name}')
             self.tabs.tab(clicked_tab, text=name)
             self.tabs.nametowidget(self.tabs.tabs()[clicked_tab]).name = name
 
     def remove(self, x, y):
+        """Remove tab and the accociated playlist."""
         clicked_tab = self.tabs.tk.call(
             self.tabs._w, "identify", "tab", x, y)
         widget = self.tabs.nametowidget(self.tabs.tabs()[clicked_tab])
@@ -65,12 +71,14 @@ class PlayList(tkinter.ttk.Frame):
         widget.destroy()
               
     def on_startup(self, startup_info):
+        """Run once on startup to load playlists and set state."""
         playlists = {'Pattern': PatternPlayList,
                      'File': FilePlayList}
         self.cashe = startup_info.get('cashe', {})
         for pl in startup_info.get('playlists', []):
             if not (pl and pl.get('type', '') in playlists):
                 continue
+            self.log.debug('Adding playlist of type: {pl[type]}')
             tab = playlists[pl['type']](self.tabs,
                                         self.player_instance,
                                         pl,
@@ -79,6 +87,7 @@ class PlayList(tkinter.ttk.Frame):
             self.tabs.add(tab, text=pl.get('name', 'playlist'))
 
     def on_close(self):
+        """Run on close to save playlists and state."""
         playlists = [pl.on_close()
                      for pl in self.tabs.children.values()]
         return {'cashe': self.cashe,
@@ -86,11 +95,13 @@ class PlayList(tkinter.ttk.Frame):
                 'version': 1}
                 
     def get_track(self, index=0):
+        """Get track from currently selected tab."""
         tab_name = self.tabs.select()
         widget = self.tabs.nametowidget(tab_name)
         return widget.get_track(index)
 
     def add_playlist(self, pl_type):
+        """Add a new playlist of the selected type."""
         playlist_types = {'pattern': PatternPlayList,
                           'file': FilePlayList}
         p = playlist_types[pl_type](self.tabs,
@@ -101,19 +112,13 @@ class PlayList(tkinter.ttk.Frame):
         self.tabs.add(p, text='Playlist')
          
     def key_event(self, target, event):
+        """
+        Pass keyevent to currently selected tab, ignore atribute errors.
+        """
+        self.log.info(f'Key event: {target}({event})')
         tab_name = self.tabs.select()
         widget = self.tabs.nametowidget(tab_name)
         try:
-            print(target, event)
             getattr(widget, target)(event)
-        except AttributeError:
-            pass
-        
-
-    def select_all(self, event):
-        tab_name = self.tabs.select()
-        widget = self.tabs.nametowidget(tab_name)
-        try:
-            widget.select_all(event)
         except AttributeError:
             pass

@@ -38,6 +38,7 @@ class PatternPlayList(tkinter.ttk.Frame):
         self.log.info('PlayList initialization Done')
 
     def on_startup(self, startup_info):
+        """Run once on startup to set playlist and state."""
         if not startup_info:
             startup_info = {'name': 'Playlist',
                             'playlist': [],
@@ -52,6 +53,7 @@ class PatternPlayList(tkinter.ttk.Frame):
         self.create_playlist_view()
 
     def on_close(self):
+        """Save state and playlist."""
         dict_to_save = {}
         if self.current_track:
             self.playlist[0].insert_file(self.current_track)
@@ -137,6 +139,7 @@ class PatternPlayList(tkinter.ttk.Frame):
             self.add_tracks(iid, p)
 
     def edit_patterns(self):
+        """Edit pattern."""
         pattern =  patternbrowser.PatternBrowser(
             self, 'Pattern Browser', self.pattern).result
         if pattern:
@@ -145,6 +148,7 @@ class PatternPlayList(tkinter.ttk.Frame):
             self.load_pattern()
 
     def load_pattern(self):
+        """Load a pattern from file."""
         for child in self.view.get_children():
             self.view.delete(child)
         self.playlist = []
@@ -158,6 +162,9 @@ class PatternPlayList(tkinter.ttk.Frame):
         self.create_playlist_view()
 
     def update_files(self):
+        """
+        Update files in patterns, clear cashe.
+        """
         for pattern in self.playlist:
             for path in pattern['paths']:
                 self.cashe.pop(path, None)

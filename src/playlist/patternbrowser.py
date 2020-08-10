@@ -6,6 +6,7 @@ import tkinter.ttk
 from widgets import Dialog
 
 class PatternBrowser(Dialog):
+    """Dialog to edit pattern,"""
     def body(self, master, initial_data=None):
         # Top buttons
         button_bar = tkinter.ttk.Frame(master)
@@ -71,6 +72,7 @@ class PatternBrowser(Dialog):
         self.load_initial_data(initial_data)
 
     def add_pattern(self, pattern=None):
+        """Add pattern to list of patterns."""
         pattern = pattern or EditPattern(self, 'Add pattern').result
         if pattern:
             name = pattern['name']
@@ -80,6 +82,7 @@ class PatternBrowser(Dialog):
             self.patterns.insert('end', pattern['name'])
 
     def remove_pattern(self):
+        """Removes a pattern from list."""
         index = self.patterns.curselection()
         if index:
             key = self.patterns.get(index[0])
@@ -87,6 +90,7 @@ class PatternBrowser(Dialog):
             self.order.delete(index)
 
     def up(self):
+        """Moves a pattern up in list."""
         index = self.order.curselection()
         if index and index[0]:
             text=self.order.get(index[0])
@@ -95,6 +99,7 @@ class PatternBrowser(Dialog):
             self.order.select_set(index[0]-1)
 
     def down(self):
+        """Moves a pattern down in list"""
         index = self.order.curselection()
         if index and not index[0] == self.order.size() - 1:
             text=self.order.get(index[0])
@@ -103,6 +108,7 @@ class PatternBrowser(Dialog):
             self.order.select_set(index[0]+1)
         
     def edit_pattern(self):
+        """Edits a pattern."""
         index = self.patterns.curselection()
         if index:
             name = self.patterns.get(index)
@@ -120,6 +126,7 @@ class PatternBrowser(Dialog):
                             
 
     def name_available(self, name, ok_name=None):
+        """Verify that name is avaliable."""
         # Reserved name
         if name == 'pattern_order':
             return False
@@ -127,11 +134,13 @@ class PatternBrowser(Dialog):
         return name not in self.patterns.data or (ok_name and name == ok_name)
     
     def clear(self):
+        """Clears all lists."""
         self.order.delete(0, 'end')
         self.patterns.delete(0, 'end')
         self.patterns.data = {}
 
     def load_initial_data(self, initial_data):
+        """Loads initial data."""
         if not initial_data:
             return
         for key in initial_data:
@@ -142,6 +151,7 @@ class PatternBrowser(Dialog):
                 self.add_pattern(initial_data[key])
         
     def load_patterns(self):
+        """Load pattern from external file."""
         pattern = configparser.ConfigParser()
         path = tkinter.filedialog.askopenfilename()
         if not path:
@@ -163,6 +173,7 @@ class PatternBrowser(Dialog):
             self.add_pattern(p)
 
     def save_patterns(self):
+        """Save pattern to external file."""
         path = tkinter.filedialog.asksaveasfilename()
         if path:
             pattern_dict = self.create_pattern_dict()
@@ -178,18 +189,22 @@ class PatternBrowser(Dialog):
                 patterns.write(fh)
 
     def add_order(self):
+        """Add pattern to order list."""
         for index in self.patterns.curselection():
             self.order.insert('end', self.patterns.get(index))
 
     def remove_order(self):
+        """Remove pattern from order list."""
         index = self.order.curselection()
         if index:
             self.order.delete(index)
 
     def apply(self):
+        """Apply to reslut on OK button press."""
         self.result = self.create_pattern_dict()
 
     def create_pattern_dict(self):
+        """The dict to return or save."""
         p = {'pattern_order': self.order.get(0, 'end')}
         for key in self.patterns.get(0, 'end'):
             p[key] = self.patterns.data[key]
@@ -197,6 +212,7 @@ class PatternBrowser(Dialog):
 
     
 class EditPattern(Dialog):
+    """Dialog to edit a pattern."""
     def body(self, master, initial_data=None):
         self.paths = []
         self.name = tkinter.StringVar()
@@ -220,9 +236,10 @@ class EditPattern(Dialog):
             self.name.set(initial_data['name'])
             self.number.set(initial_data['number'])
             for path in initial_data['paths']:
-                self.add_path()
+                self.add_path(path)
 
     def add_path(self, path=None):
+        """Add path to pattern."""
         path = path or tkinter.filedialog.askdirectory()
         if path:
             # Frame.
@@ -236,17 +253,20 @@ class EditPattern(Dialog):
             l.pack(side='left', fill=tkinter.X)
 
             # Close button.
-            b = tkinter.ttk.Button(
+            # ToDo: change to ttk button when a nice theme for close button exists
+            b = tkinter.Button(
                 f, text='X', relief='flat', command=lambda f=f: self.remove(f))
             b.pack(side='right')
 
     def remove(self, widget):
+        """Remove path from pattern."""
         for index, w in enumerate(self.paths):
             if w == widget:
                 self.paths.pop(index)
                 widget.destroy()
 
     def apply(self):
+        """Apply result on OK button press."""
         self.result = {'name': self.name.get(),
                        'paths': [l.path for l in self.paths],
                        'number': self.number.get()}

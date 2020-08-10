@@ -24,6 +24,10 @@ class ScrollableFrame(tkinter.ttk.Frame):
         scrollbar.pack(side="right", fill="y")
 
 class Dialog(tkinter.Toplevel):
+    """
+    Parent Dialog frame, inherit and override
+    boddy and apply methods.
+    """
     def __init__(self, parent, title=None, initial_data=None):
         super().__init__(parent)
         self.transient(parent)
@@ -56,9 +60,11 @@ class Dialog(tkinter.Toplevel):
         self.wait_window(self)
 
     def body(self, master, initial_data=None):
+        """Body of dialog, override in child classes."""
         pass
 
     def buttonbox(self):
+        """Standard OK and Cancel buttons."""
         box = tkinter.ttk.Frame(self)
 
         w = tkinter.ttk.Button(
@@ -72,9 +78,10 @@ class Dialog(tkinter.Toplevel):
         self.bind("<Escape>", self.cancel)
 
         box.pack()
+        return box
 
     def ok(self, event=None):
-
+        """On OK button press."""
         if not self.validate():
             self.initial_focus.focus_set()
             return
@@ -87,17 +94,23 @@ class Dialog(tkinter.Toplevel):
         self.cancel()
 
     def cancel(self, event=None):
+        """On Cancel button press."""
         self.parent.focus_set()
         self.destroy()
 
     def validate(self):
+        """
+        Validate action on close, defaults to True if not overridden.
+        """
         return 1
 
     def apply(self):
+        """Apply result on OK button press, override in child class."""
         pass
 
 class SetKey(Dialog):
     def body(self, master, initial_data):
+        """Body of set key dialog."""
         self.key = tkinter.StringVar()
         self.key.set(initial_data or '')
         tkinter.ttk.Label(
@@ -106,6 +119,7 @@ class SetKey(Dialog):
         self.bind("<Key>", self.key_press)
 
     def key_press(self, event):
+        """Capture keypress and make a tkinter binding string."""
         modifier_chars = {131080: 'Alt',
                           12: 'Control'}
         modifier = modifier_chars.get(event.state, '')
@@ -113,6 +127,17 @@ class SetKey(Dialog):
             modifier += '-'
         if not '_' in event.keysym:
             self.key.set(f'<{modifier}{event.keysym}>')
-            
+
+    def buttonbox(self):
+        """Overriding the standard buttonbox with a clear button."""
+        box = super().buttonbox()
+        b = tkinter.ttk.Button(box, text='Clear', command=self.clear)
+        b.pack(side='left', padx=5, pady=5)
+
+    def clear(self):
+        '''Clear key setting.'''
+        self.key.set('')
+        
     def apply(self):
+        """Set result upon OK button press."""
         self.result = self.key.get()
