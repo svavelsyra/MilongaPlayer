@@ -95,10 +95,10 @@ class FilePlayList(tkinter.ttk.Frame):
             self.log.info('User canceled')
             return
         for root, dirs, files in os.walk(path):
+            files = [os.path.join(root, file) for file in
+                     files if file.endswith('.mp3')]
             if files:
-                self.add_files(
-                    [os.path.join(root, file) for file in
-                     files if file.endswith('.mp3')])
+                self.add_files(files)
 
     def add_files(self, paths=None):
         """Add one or more files to playlist."""
@@ -146,8 +146,8 @@ class FilePlayList(tkinter.ttk.Frame):
         Index > 0 gets that amount of tracks forward in list."""
         # As get_children returns a list or '' a list is allways
         # created with the or construct.
-        new_index = [self.current_index] or self.view.get_children() or [None]
-        self.current_index = new_index[0]
+        if not self.current_index:
+            self.current_index = (self.view.get_children() or [None])[0]
         if not self.current_index:
             return ''
         if self.random.get():

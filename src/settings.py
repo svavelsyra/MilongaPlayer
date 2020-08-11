@@ -98,14 +98,16 @@ class KeyBindings(tkinter.ttk.Frame):
     @staticmethod
     def defaults():
         """Default keybindings."""
-        return {'Playlist': (('Select all', '<Control-a>'),
-                             ('Delete', '<Delete>'))}
+        return {'Playlist': {'Select all': '<Control-a>',
+                             'Delete': '<Delete>'},
+                'Playback': {'Play': '<space>'}}
+
 
     def set_bindings(self, bindings):
         """Create view of all bindings."""
         for category, action_list in bindings.items():
             iid = self.view.insert('', 'end', text=category)
-            for action, default in action_list:
+            for action, default in action_list.items():
                 sub_iid = self.view.insert(
                     iid, 'end', text=action, values=(default, ))
                 self.view.see(sub_iid)

@@ -10,7 +10,7 @@ import player
 import playlist
 import settings
 
-VERSION = '1.3.0'
+VERSION = '1.4.0'
 
 class Gui():
     def __init__(self, master, player_instance):
@@ -22,16 +22,17 @@ class Gui():
         startup_info = self.on_startup()
         self.master.winfo_toplevel().title(f"Milonga Player {VERSION}")
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
-        p = ContiniousPlayer(self.master, player_instance)
+        self.player = ContiniousPlayer(self.master, player_instance)
 
         # Playlists.
         upper = tkinter.ttk.Frame(master)
         tkinter.Button(upper, command=self.configure, text='Settings').pack()
-        self.playlist = playlist.PlayList(upper, p, startup_info.get('playlists', {}))
+        self.playlist = playlist.PlayList(
+            upper, self.player, startup_info.get('playlists', {}))
         
         # Player controlls.
         bottom = tkinter.ttk.Frame(master)
-        self.controlls = PlayerControlls(bottom, p)
+        self.controlls = PlayerControlls(bottom, self.player)
 
         # Status bar.
         status_bar = StatusBar(master, player_instance)
@@ -56,17 +57,23 @@ class Gui():
             path = '/.milongaplayer'
         return os.path.expanduser(f'~{path}')
 
-    def key_bindings(self, value=None):
+    def key_bindings(self):
         """Set keybindings."""
-        for section, value in self.settings['key_bindings'].items():
+        def set_binding(obj, values):
+            for name in values:
+                binding = self.settings.get('key_bindings', {}).get(name, values[name])
+                name = name.lower().replace(' ', '_')
+                self.log.debug('Setting {key=} for {binding=}')
+                self.master.bind(
+                    binding,
+                    lambda event, name=name: obj.key_event(name, event))
+                    
+        for section, values in settings.SettingsDialog.defaults()['key_bindings'].items():
             self.log.debug('Handling keybindings for section: {section}')
             if 'playlist' in section.lower():
-                for name, binding in value:
-                    name = name.lower().replace(' ', '_')
-                    self.log.debug('Setting {key=} for {binding=}')
-                    self.master.bind(
-                        binding,
-                        lambda event, name=name: self.playlist.key_event(name, event))
+                set_binding(self.playlist, values)
+            if 'playback' in section.lower():
+                set_binding(self.player, values)
 
     def configure(self):
         """Configure settings."""
@@ -316,6 +323,14 @@ class ContiniousPlayer():
         self.player_instance.play(track)
         self.master.after(100, self.worker)
 
+    def key_event(self, target, event):
+        """Set keybinding"""
+        self.log.info(f'Key event: {target}({event})')
+        try:
+            getattr(self, target)()
+        except AttributeError:
+            self.log.info(f'Missing attribute: self.{target}')
+
 class PlayerControlls(tkinter.ttk.Frame):
     """
     Player controll buttons.
@@ -332,6 +347,7 @@ class PlayerControlls(tkinter.ttk.Frame):
         tkinter.ttk.Button(
             self, text='Next', command=self.player.next).pack(side='left')
         self.log.info('Done initializing PlayerControlls')
+        
 
 if __name__ == '__main__':
     errors = []
