@@ -99,8 +99,11 @@ class KeyBindings(tkinter.ttk.Frame):
     def defaults():
         """Default keybindings."""
         return {'Playlist': {'Select all': '<Control-a>',
-                             'Delete': '<Delete>'},
-                'Playback': {'Play': '<space>'}}
+                             'Delete': '<Delete>',
+                             'Enqueue': '<q>'},
+                'Playback': {'Play': '<space>',
+                             'Next': '<Control-n>',
+                             'Previous': '<Control-p>'}}
 
 
     def set_bindings(self, bindings):

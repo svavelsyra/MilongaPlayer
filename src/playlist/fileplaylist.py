@@ -13,6 +13,7 @@ class FilePlayList(tkinter.ttk.Frame):
         self.log.info('Initialization of PlayList')
         self.player = player_instance
         self.cashe = cashe
+        self.queue = []
         super().__init__(master, *args, **kwargs)
 
         buttons = tkinter.ttk.Frame(self)
@@ -28,18 +29,25 @@ class FilePlayList(tkinter.ttk.Frame):
 
         self.view = tkinter.ttk.Treeview(self, show='headings')
         self.view.bind('<ButtonPress-1>', self.on_click)
+        self.view.bind('<ButtonPress-3>', self.on_right_click)
         self.view.bind('<Control-ButtonPress-1>', self.on_ctrl_click)
-        #self.view.bind('<Control-a>', self.select_all)
         self.view.bind('<B1-Motion>', self.on_move)
         self.view.bind('<Double-1>', self.on_dclick)
-        #¤self.view.bind('<Delete>', self.delete)
         self.view.pack(side='left', expand=1, fill=tkinter.BOTH)
         scrollbar = tkinter.ttk.Scrollbar(
             self, orient='vertical', command=self.view.yview)
         scrollbar.pack(side='left', fill=tkinter.Y)
         self.view.configure(yscrollcommand=scrollbar.set)
+        self.add_columns(('queue', 'name'))
+        self.view.column('queue', width=60, stretch=False)
+        self.view.heading('queue', text='')
 
         self.on_startup(startup_info)
+
+        # Development stuff
+        for iid in self.view.get_children():
+            self.view.set(iid, 'queue', '')
+        self.queue = []
 
     def on_startup(self, startup_info):
         """Run once on startup to set files and settings."""
@@ -52,12 +60,13 @@ class FilePlayList(tkinter.ttk.Frame):
                             'settings': {}}
         for key, default in (('files', {}),
                              ('current_index', None),
-                             ('name', 'Playlist')):
+                             ('name', 'Playlist'),
+                             ('queue', [])):
             value = startup_info.get(key, default)
             setattr(self, key, value)
-        value = startup_info.get('columns', ['name'])
-        self.log.info(f'Setting columns: {value}')
-        self.add_columns(value)
+        value = startup_info.get('columns', ['queue', 'name'])
+        self.log.info(f'Showing columns: {value}')
+        self.view['displaycolumns'] = value
         for iid, path, values in startup_info.get('playlist', []):
             self.view.insert('', 'end', iid=iid, text=path)
             for key, value in values.items():
@@ -75,7 +84,7 @@ class FilePlayList(tkinter.ttk.Frame):
     def on_close(self):
         """Run on close to save state and settings."""
         startup_info = {'type': 'File'}
-        for key in ('files', 'current_index', 'name'):
+        for key in ('files', 'current_index', 'name', 'queue'):
             startup_info[key] = getattr(self, key)
         startup_info['playlist'] = []
         startup_info['columns'] = self.view['columns']
@@ -84,7 +93,7 @@ class FilePlayList(tkinter.ttk.Frame):
             values = {key: self.view.set(child, key) for key in startup_info['columns']}
             startup_info['playlist'].append((child, text, values))
         startup_info['settings'] = {}
-        for setting in ('random', ):
+        for setting in ('random',):
             startup_info['settings'][setting] = getattr(self, setting).get()
         return startup_info
 
@@ -144,8 +153,12 @@ class FilePlayList(tkinter.ttk.Frame):
         Get track to play.
 
         Index > 0 gets that amount of tracks forward in list."""
-        # As get_children returns a list or '' a list is allways
-        # created with the or construct.
+        if self.queue:
+            self.decrement_queue_index()
+            iid = self.queue.pop(0)
+            self.view.selection_set(iid)
+            self.view.see(iid)
+            return self.view.item(iid, 'text')
         if not self.current_index:
             self.current_index = (self.view.get_children() or [None])[0]
         if not self.current_index:
@@ -158,10 +171,13 @@ class FilePlayList(tkinter.ttk.Frame):
             self.view.selection_set(self.current_index)
             self.view.see(self.current_index)
             return self.view.item(self.current_index, 'text')
-        else:
+        elif index > 0:
             self.current_index = self.view.next(self.current_index) or self.view.get_children()[0]
             return self.get_track(index-1)
-            
+        else:
+            self.current_index = self.view.prev(self.current_index) or self.view.get_children()[-1]
+            return self.get_track(index+1)
+        
     def on_click(self, event):
         """
         On left click in view.
@@ -192,6 +208,25 @@ class FilePlayList(tkinter.ttk.Frame):
         else:
             self.view.selection_add((iid, ))
 
+    def on_right_click(self, event):
+        """Right click context menu."""
+        region = self.view.identify('region', event.x, event.y)
+        if region == 'heading':
+            return
+        
+        iid = self.view.identify('item', event.x, event.y)
+        if not iid in self.view.selection():
+            self.view.selection_set(iid)
+
+        menu = tkinter.Menu(self, tearoff=0)
+        menu.add_command(label='Enqueue', command=self.enqueue)
+        menu.add_command(label='Dequeue', command=self.dequeue)
+        menu.add_command(label='Delete', command=self.delete)
+        try:
+            menu.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            menu.grab_release()
+
     def on_move(self, event):
         """Move element in list."""
         tv = event.widget
@@ -200,7 +235,7 @@ class FilePlayList(tkinter.ttk.Frame):
 
     def on_dclick(self, event):
         """On double click play that track."""
-        region = self.view.identify("region", event.x, event.y)
+        region = self.view.identify('region', event.x, event.y)
         if region == 'heading':
             return
         iid = self.view.identify('item', event.x, event.y)
@@ -208,7 +243,7 @@ class FilePlayList(tkinter.ttk.Frame):
         path = self.view.item(iid, 'text')
         self.player.play(path)
 
-    def delete(self, event):
+    def delete(self, event=None):
         """Delete selection key binding."""
         to_delete = self.view.selection()
         if self.current_index in to_delete:
@@ -218,4 +253,39 @@ class FilePlayList(tkinter.ttk.Frame):
     def select_all(self, event):
         """Select all keybinding."""
         self.view.selection_set(self.view.get_children())
+
+    def decrement_queue_index(self):
+        for iid in set(self.queue):
+            indexes = self.view.set(iid, 'queue').split(',')
+            new_indexes = []
+            for index in indexes:
+                if index:
+                    index = int(index) - 1
+                if index:
+                    new_indexes.append(str(index))
+            self.view.set(iid, 'queue', ','.join(new_indexes))
+
+    def dequeue(self, event=None):
+        self.queue.reverse()
+        for iid in self.view.selection():
+            try:
+                self.queue.remove(iid)
+            except ValueError:
+                pass
+            else:
+                new = ','.join(self.view.set(iid, 'queue').split(',')[:-1])
+                self.view.set(iid, 'queue', new)
+        self.queue.reverse()
+            
+
+    def enqueue(self, event=None):
+        """Enque file to play"""
+        for iid in self.view.selection():
+            self.queue.append(iid.strip())
+            current = self.view.set(iid, 'queue')
+            if current:
+                current += ','
+            current += str(len(self.queue))
+            self.view.set(iid, 'queue', current)
+            
             

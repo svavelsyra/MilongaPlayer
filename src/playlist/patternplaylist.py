@@ -118,6 +118,8 @@ class PatternPlayList(tkinter.ttk.Frame):
             self.current_track = track
             self.log.info(f'Found track {track}')
             return track
+        elif index < 0:
+            pass
         else:
             if not self.playlist[0]:
                 self.move_to_last()

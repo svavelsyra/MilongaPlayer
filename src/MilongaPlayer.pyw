@@ -10,7 +10,7 @@ import player
 import playlist
 import settings
 
-VERSION = '1.4.0'
+VERSION = '1.5.0'
 
 class Gui():
     def __init__(self, master, player_instance):
@@ -284,8 +284,24 @@ class ContiniousPlayer():
         Change to next track.
         """
         self.log.info('Next')
-        track = self.get_next_track()
+        track = self.get_track(1)
         self.log.debug(f'Next track: {track}')
+        self.set_track(track)
+
+    def previous(self):
+        """
+        Change to previous track.
+        """
+        self.log.info('Previous')
+        track = self.get_track(-1)
+        self.log.debug(f'Previous track: {track}')
+        self.set_track(track)
+
+
+    def set_track(self, track):
+        """
+        Set track to the specified track.
+        """
         if not track:
             self.log.warning('Could not find next track')
             return
@@ -296,13 +312,7 @@ class ContiniousPlayer():
         else:
             self.log.debug('Is not playing, set next track without playing')
             self.player_instance.set_mrl(track)
-
-    def get_next_track(self):
-        """
-        Get next track from playlist.
-        """
-        self.log.info('Get next track')
-        return self.get_track(1)
+        
 
     def worker(self):
         """
@@ -315,7 +325,7 @@ class ContiniousPlayer():
         if self.paused or self.player_instance.is_playing():
             self.master.after(100, self.worker)
             return
-        track = self.get_next_track()
+        track = self.get_track(1)
         if not track:
             self.log.warning('Worker unable to get next track')
             return
