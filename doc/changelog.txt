@@ -11,3 +11,4 @@
 1.3.0	Added settings dialog, Added configurable key-bindings, changed save place to user home directory.
 1.4.0	[BREAKING] Changed format for saved data. Added keybinding for play/pause toggle.
 1.5.0	Added enqueue/dequeue to fileplaylist, added binding for queue to <q>, added enque and dequeue to rightclick menu
+1.6.0	Possible to continue playing from one playlist while editing another

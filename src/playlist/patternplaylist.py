@@ -190,6 +190,7 @@ class PatternPlayList(tkinter.ttk.Frame):
                 self.view.delete(prev)
                 self.playlist[0].playlist.pop(0)
             self.current_track = self.playlist[0].playlist.pop(0)
+            self.set_playlist(self)
             self.player.play(self.current_track)
         # User has clicked a pattern item
         else:

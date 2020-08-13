@@ -15,6 +15,7 @@ class PlayList(tkinter.ttk.Frame):
         super().__init__(master, *args, **kwargs)
         self.player_instance = player_instance
         self.player_instance.get_track = self.get_track
+        self.player_instance.set_playlist = self.set_playlist
 
         # Buttons
         buttonbar = tkinter.ttk.Frame(master)
@@ -75,6 +76,7 @@ class PlayList(tkinter.ttk.Frame):
         playlists = {'Pattern': PatternPlayList,
                      'File': FilePlayList}
         self.cashe = startup_info.get('cashe', {})
+        self.current_playlist = None
         for pl in startup_info.get('playlists', []):
             if not (pl and pl.get('type', '') in playlists):
                 continue
@@ -86,18 +88,27 @@ class PlayList(tkinter.ttk.Frame):
             tab.pack(expand=1, fill=tkinter.BOTH)
             self.tabs.add(tab, text=pl.get('name', 'playlist'))
 
+        current_tab = startup_info.get('current_tab', None)
+        if current_tab in self.tabs.tabs():
+            self.tabs.select(current_tab)
+
     def on_close(self):
         """Run on close to save playlists and state."""
         playlists = [pl.on_close()
                      for pl in self.tabs.children.values()]
         return {'cashe': self.cashe,
+                'current_tab': self.tabs.select(),
                 'playlists': playlists,
                 'version': 1}
-                
+
+    def set_playlist(self, pl):
+        self.current_playlist = pl
+            
     def get_track(self, index=0):
         """Get track from currently selected tab."""
-        tab_name = self.tabs.select()
-        widget = self.tabs.nametowidget(tab_name)
+        if not self.current_playlist in self.tabs.tabs():
+            self.current_playlist = self.tabs.select()
+        widget = self.tabs.nametowidget(self.current_playlist)
         return widget.get_track(index)
 
     def add_playlist(self, pl_type):

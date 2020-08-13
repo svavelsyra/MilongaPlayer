@@ -10,7 +10,7 @@ import player
 import playlist
 import settings
 
-VERSION = '1.5.0'
+VERSION = '1.6.0'
 
 class Gui():
     def __init__(self, master, player_instance):

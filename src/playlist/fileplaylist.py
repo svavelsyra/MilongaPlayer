@@ -241,6 +241,7 @@ class FilePlayList(tkinter.ttk.Frame):
         iid = self.view.identify('item', event.x, event.y)
         self.current_index = iid
         path = self.view.item(iid, 'text')
+        self.player.set_playlist(self)
         self.player.play(path)
 
     def delete(self, event=None):
