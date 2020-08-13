@@ -3,6 +3,7 @@ import os
 import tkinter
 import tkinter.ttk
 
+from playlist import history
 from playlist import pattern
 from playlist import patternbrowser
 
@@ -31,6 +32,8 @@ class PatternPlayList(tkinter.ttk.Frame):
             self, orient='vertical', command=self.view.yview)
         scrollbar.pack(side='left', fill=tkinter.Y)
         self.view.configure(yscrollcommand=scrollbar.set)
+        self.history = history.History(self)
+        self.history.pack(side='left', fill=tkinter.Y)
         self.on_startup(startup_info)
         self.current_track = None
         self.player = player_instance
@@ -112,6 +115,17 @@ class PatternPlayList(tkinter.ttk.Frame):
         otherwise set next track as current and return that.
         Otherwise step next track to current track and countdown index with one.
         """
+        def pl_info(pl):
+            name = pl.name
+            playlist = [os.path.splitext(os.path.basename(filename))[0] for
+                        filename in pl.playlist]
+            playlist = '\n\t'.join(playlist)
+            return f'{name}\n\t{playlist}'
+
+        if not self.history.current.get():
+            self.history.add(self.playlist[0])
+            self.history.add(self.playlist[1])
+        
         self.log.info(f'Get track with index: {index}')
         if index == 0:
             track = self.current_track or self.playlist[0].next()
@@ -119,11 +133,13 @@ class PatternPlayList(tkinter.ttk.Frame):
             self.log.info(f'Found track {track}')
             return track
         elif index < 0:
+            # Previous not implemented
             pass
         else:
             if not self.playlist[0]:
                 self.move_to_last()
                 self.current_track = self.playlist[0].next()
+                self.history.add(self.playlist[1])
             else:
                 self.current_track = self.playlist[0].next()
                 parent_iid = self.view.get_children()[0]
@@ -176,6 +192,11 @@ class PatternPlayList(tkinter.ttk.Frame):
         """
         On double click play the clicked song.
         """
+        def update_history():
+            self.history.add(self.history.current.get())
+            self.history.add(self.playlist[0])
+            self.history.add(self.playlist[1])
+            
         iid = self.view.identify('item', event.x, event.y)
         values = self.view.item(iid, 'values')
         # User has clicked track item
@@ -189,12 +210,15 @@ class PatternPlayList(tkinter.ttk.Frame):
                     break
                 self.view.delete(prev)
                 self.playlist[0].playlist.pop(0)
-            self.current_track = self.playlist[0].playlist.pop(0)
-            self.set_playlist(self)
-            self.player.play(self.current_track)
         # User has clicked a pattern item
         else:
             self.log.info(f'Double click on pattern {iid}')
             self.move_to_item(iid)
-            self.current_track = self.playlist[0].playlist.pop(0) 
-            self.player.play(self.current_track)
+
+        update_history()
+        self.current_track = self.playlist[0].playlist.pop(0)
+        self.player.set_playlist(self)
+        self.player.play(self.current_track)
+
+
+

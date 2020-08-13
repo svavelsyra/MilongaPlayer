@@ -27,8 +27,14 @@ class Pattern():
     def __repr__(self):
         return f'Pattern({self.root_paths}, {self.number}, {self.extentions})'
 
+    def __str__(self):
+        pl = [os.path.splitext(os.path.basename(filename))[0] for
+              filename in self.playlist]
+        pl = '\n\t'.join(pl)
+        return f'{self.name}\n\t{pl}'        
+
     def __len__(self):
-        return len(self.playlist) 
+        return len(self.playlist)
 
     def next(self):
         """Get the next track to play"""

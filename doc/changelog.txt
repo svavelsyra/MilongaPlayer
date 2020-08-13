@@ -1,14 +1,15 @@
-0.0.4	Breakout of playlist
-0.0.5	Pickling of playlists - Saving state, Change name of playlists, Pattern browser, New Pattern config format
+0.0.4	Breakout of playlist.
+0.0.5	Pickling of playlists - Saving state, Change name of playlists, Pattern browser, New Pattern config format.
 0.0.6	Button for adding playlist, Remove playlist right click context menu, able to remove paths from path window, change order, scrollbars in pattern browser.
-0.0.7	[BUG] - current file is saved on close, stopped playing now correctly show 00:00:00 as time. [FEATURES] - Automatic conversion from older .dat formats to newer ones, possible to update files
-1.0.0	First real release!, Added a normal playlist with basic functionality, some refactoring on where code lies in the code tree, makes previous .dat files incompatible
-1.1.0	[BUG] - No longer hang on missing file. [FEATURES] - Multiple select in add files, Multiple select of playlist entries in fileplaylist, select all key binding in fileplaylist
+0.0.7	[BUG] - current file is saved on close, stopped playing now correctly show 00:00:00 as time. [FEATURES] - Automatic conversion from older .dat formats to newer ones, possible to update files.
+1.0.0	First real release!, Added a normal playlist with basic functionality, some refactoring on where code lies in the code tree, makes previous .dat files incompatible.
+1.1.0	[BUG] - No longer hang on missing file. [FEATURES] - Multiple select in add files, Multiple select of playlist entries in fileplaylist, select all key binding in fileplaylist.
 1.2.0	[BUG] - Handling of play on empty list. [FEATURES] - Random play is possible for fileplaylist.
-1.2.1	[BUG] - Renaming of pattern changes name in order as well
+1.2.1	[BUG] - Renaming of pattern changes name in order as well.
 1.2.2	Adding startup checks.
-1.2.3	Changing to ttk widgets on some places where they where old tkinter widgets
+1.2.3	Changing to ttk widgets on some places where they where old tkinter widgets.
 1.3.0	Added settings dialog, Added configurable key-bindings, changed save place to user home directory.
 1.4.0	[BREAKING] Changed format for saved data. Added keybinding for play/pause toggle.
-1.5.0	Added enqueue/dequeue to fileplaylist, added binding for queue to <q>, added enque and dequeue to rightclick menu
-1.6.0	Possible to continue playing from one playlist while editing another
+1.5.0	Added enqueue/dequeue to fileplaylist, added binding for queue to <q>, added enque and dequeue to rightclick menu.
+1.6.0	Possible to continue playing from one playlist while editing another.
+1.7.0	Added history to pattern playlist.
