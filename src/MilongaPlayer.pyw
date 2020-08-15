@@ -9,6 +9,7 @@ import tkinter.ttk
 import player
 import playlist
 import settings
+import statuswindow
 
 VERSION = '1.7.0'
 
@@ -45,6 +46,7 @@ class Gui():
 
         self.key_bindings()
 
+        statuswindow.StatusWindow(self.master, player_instance)
         self.init_ok = True
         self.log.info('Initialization done!')
 
@@ -216,20 +218,11 @@ class StatusBar(tkinter.ttk.Frame):
         current_time = convert_time(max(0, self.player_instance.get_time()))
         self.time.set(f'{current_time}/{duration}')
 
-    def replace(self, text):
-        """
-        Replace various quotings with correct values.
-        """
-        for old, new in (('%20', ' '), ('%27', "'")):
-            text = text.replace(old, new)
-        return text
-
     def worker(self):
         """Continiously update the status."""
         media = self.player_instance.get_media()
         if media:
-            path = self.replace(media.get_mrl())
-            name = os.path.basename(path)
+            name = os.path.basename(self.player_instance.current_track)
             self.name.set(name)
             self.position.set(self.player_instance.get_position()*1000)
             self.update_time(media)

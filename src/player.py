@@ -53,6 +53,7 @@ class Player():
             if not os.path.exists(track):
                 self.log.warning(f'Could not find track: {track}')
                 return
+            self.current_track = track
             self.set_mrl(track)
         self.vlc.play()
         start_time = time.monotonic() 
