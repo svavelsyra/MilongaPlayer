@@ -11,7 +11,7 @@ import playlist
 import settings
 import statuswindow
 
-VERSION = '1.7.0'
+VERSION = '1.8.0'
 
 class Gui():
     def __init__(self, master, player_instance):
@@ -25,9 +25,14 @@ class Gui():
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         self.player = ContiniousPlayer(self.master, player_instance)
 
+        # Buttons
+        buttons = tkinter.ttk.Frame(master)
+        tkinter.Button(buttons, command=self.configure, text='Settings').pack(side='left')
+        tkinter.Button(buttons, command=lambda : statuswindow.StatusWindow(self.master, player_instance),
+                       text='External Window').pack(side='left')
+
         # Playlists.
         upper = tkinter.ttk.Frame(master)
-        tkinter.Button(upper, command=self.configure, text='Settings').pack()
         self.playlist = playlist.PlayList(
             upper, self.player, startup_info.get('playlists', {}))
         
@@ -39,17 +44,12 @@ class Gui():
         status_bar = StatusBar(master, player_instance)
         status_bar.pack(side='top', fill=tkinter.X)
 
-        # Status window (External window)
-        sw = config.getboolean('status window', 'enabled', fallback=None)
-        self.status_window = sw and statuswindow.StatusWindow(
-            self.master, player_instance)
-
+        buttons.pack(side='top')
         upper.pack(fill=tkinter.BOTH, expand=1, side='top')
         bottom.pack(fill=tkinter.X, side='bottom')
         self.playlist.pack(fill=tkinter.BOTH, expand=1, side='left')
         self.controlls.pack()
 
-        self.external_window = None
         self.init_ok = True
         self.log.info('Initialization done!')
 
@@ -161,7 +161,6 @@ class Gui():
             config.set('window', 'width', str(self.master.winfo_width()))
             config.set('window', 'posx', str(self.master.winfo_x()))
             config.set('window', 'posy', str(self.master.winfo_y()))
-            config.set('status window', 'enabled', str(bool(self.status_window)))
             self.log.debug('Done gathering close down info, saving...')
             os.makedirs(self.data_path, exist_ok=True)
             with open(self.config_path, 'w') as fh:

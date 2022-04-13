@@ -28,7 +28,7 @@ class PlayList(tkinter.ttk.Frame):
 
         # Tabs
         # Initialize to 1x1 So that bottom bar is visible on verry
-        # small screans. expands to take availbe space during packing.
+        # small screens. expands to take availbe space during packing.
         self.tabs = tkinter.ttk.Notebook(self, width=1, height=1)
         self.tabs.bind('<Button-3>', self.popup)
 
