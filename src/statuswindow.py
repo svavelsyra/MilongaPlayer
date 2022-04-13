@@ -9,9 +9,6 @@ class StatusWindow():
         self.top = tkinter.Toplevel(master)
         self.top.bind('<Configure>', self.resize)
 
-        # Container
-        #f = tkinter.Frame(self.top, width=400, height=200)
-
         # Label
         self.current_track = tkinter.StringVar()
         self.label_font = tkinter.font.Font(
@@ -19,7 +16,6 @@ class StatusWindow():
         self.label = tkinter.ttk.Label(
             self.top, textvariable=self.current_track, font=self.label_font)
         self.label.pack(fill=tkinter.BOTH, expand=1)
-        #f.pack(fill=tkinter.BOTH, expand=1)
 
         self.worker()
 
