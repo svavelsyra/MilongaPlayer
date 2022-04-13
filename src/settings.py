@@ -1,3 +1,4 @@
+import logging
 import tkinter
 import tkinter.ttk
 
@@ -75,13 +76,16 @@ class KeyBindings(tkinter.ttk.Frame):
     def __init__(self, master, initial_data, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.master = master
+        self.log = logging.getLogger('MilongaPlayer.Settings.KeyBindings')
         self.changed = False
+        initial_data = initial_data or self.defaults()
         self.view = tkinter.ttk.Treeview(self, columns=('Binding'))
         self.view.pack(fill=tkinter.BOTH, expand=1)
         for col in self.view['columns']:
             self.view.heading(col, text=col)
         self.view.heading('#0', text='Action')
         self.view.bind('<Button-1>', self.set_key)
+        self.log.info(initial_data)
         self.set_bindings(initial_data)
 
     @property
@@ -90,9 +94,9 @@ class KeyBindings(tkinter.ttk.Frame):
         result = {}
         for c_iid in self.view.get_children(''):
             category = self.view.item(c_iid, 'text')
-            result[category] = tuple((self.view.item(key, 'text'),
-                                      self.view.set(key, 'Binding'))
-                                     for key in self.view.get_children(c_iid))
+            result[category] = {self.view.item(key, 'text'):
+                                self.view.set(key, 'Binding')
+                                for key in self.view.get_children(c_iid)}
         return result
 
     @staticmethod
@@ -108,11 +112,12 @@ class KeyBindings(tkinter.ttk.Frame):
 
     def set_bindings(self, bindings):
         """Create view of all bindings."""
+        self.log.info(f'Set Bindings: {bindings}')
         for category, action_list in bindings.items():
             iid = self.view.insert('', 'end', text=category)
-            for action, default in action_list.items():
+            for action, value in action_list.items():
                 sub_iid = self.view.insert(
-                    iid, 'end', text=action, values=(default, ))
+                    iid, 'end', text=action, values=(value, ))
                 self.view.see(sub_iid)
         self.view.see('')
 

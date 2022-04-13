@@ -15,7 +15,7 @@ class History(tkinter.ttk.Frame):
         self.next.set('')
 
         for key in ('previous', 'current', 'next'):
-            f = tkinter.Frame(self, width=200, height=200)
+            f = tkinter.Frame(self, width=300, height=200)
             f.pack_propagate(0)
             f.pack(side='top', expand=1, fill=tkinter.Y)
             tkinter.ttk.Label(f, text=key.capitalize()).pack(side='top', fill=tkinter.X)

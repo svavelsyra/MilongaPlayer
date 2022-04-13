@@ -27,7 +27,9 @@ class PlayList(tkinter.ttk.Frame):
                            text='Add file playlist').pack(side='left')
 
         # Tabs
-        self.tabs = tkinter.ttk.Notebook(self)
+        # Initialize to 1x1 So that bottom bar is visible on verry
+        # small screens. expands to take availbe space during packing.
+        self.tabs = tkinter.ttk.Notebook(self, width=1, height=1)
         self.tabs.bind('<Button-3>', self.popup)
 
         # Packing
