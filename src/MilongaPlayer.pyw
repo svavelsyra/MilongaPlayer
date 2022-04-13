@@ -39,14 +39,17 @@ class Gui():
         status_bar = StatusBar(master, player_instance)
         status_bar.pack(side='top', fill=tkinter.X)
 
+        # Status window (External window)
+        sw = config.getboolean('status window', 'enabled', fallback=None)
+        self.status_window = sw and statuswindow.StatusWindow(
+            self.master, player_instance)
+
         upper.pack(fill=tkinter.BOTH, expand=1, side='top')
         bottom.pack(fill=tkinter.X, side='bottom')
         self.playlist.pack(fill=tkinter.BOTH, expand=1, side='left')
         self.controlls.pack()
 
-        self.key_bindings()
-
-        statuswindow.StatusWindow(self.master, player_instance)
+        self.external_window = None
         self.init_ok = True
         self.log.info('Initialization done!')
 
@@ -59,7 +62,7 @@ class Gui():
             path = '/.milongaplayer'
         return os.path.expanduser(f'~{path}')
 
-    def key_bindings(self):
+    def key_bindings(self, values=None):
         """Set keybindings."""
         def set_binding(obj, values):
             for name in values:
@@ -69,8 +72,8 @@ class Gui():
                 self.master.bind(
                     binding,
                     lambda event, name=name: obj.key_event(name, event))
-                    
-        for section, values in settings.SettingsDialog.defaults()['key_bindings'].items():
+        values = values or settings.SettingsDialog.defaults()['key_bindings']
+        for section, values in values.items():
             self.log.debug('Handling keybindings for section: {section}')
             if 'playlist' in section.lower():
                 set_binding(self.playlist, values)
@@ -84,6 +87,7 @@ class Gui():
         if not new_settings.result:
             return
         for key, value in new_settings.result.items():
+            self.log.info(f'{key=} {value=}')
             self.settings[key] = value
             getattr(self, key)(value)
 
@@ -94,10 +98,13 @@ class Gui():
         log_level = config.get('logging', 'log_level', fallback='INFO')
         log_format = '{levelname}:{asctime}: {name}.{funcName}: {message}'
         log_format = config.get('logging', 'log_format', fallback=log_format)
+        # Initially setting loglevel to INFO so to always get initial
+        # Logging done.
         logging.basicConfig(level='INFO', format=log_format, style='{')
         self.log.info(f'Starting MilongaPlayer version {VERSION}')
         self.log.info(f'Loading Config: {self.config_path}')
         self.log.info(f'Set log level: {log_level}')
+        # Setting requested loglevel.
         self.log.setLevel(log_level)
         state = config.get('window', 'state', fallback='normal')
         height = config.getint('window', 'height', fallback=300)
@@ -124,6 +131,8 @@ class Gui():
         except:
             self.log.error('Error during startup:', exc_info=True)
             startup_info = {}
+
+        # Setting key mapp.
         for key, default in (('settings', settings.SettingsDialog.defaults()),):
             value = startup_info.get('main', {}).get(key, default)
             self.log.debug(f'Setting: self.{key} to {value}')
@@ -139,7 +148,7 @@ class Gui():
             config = configparser.ConfigParser()
             result = config.read(self.config_path)
             self.log.debug(f'Read config file: {result}')
-            for section in ('window',):
+            for section in ('window', 'status window'):
                 try:
                     config.add_section(section)
                 except configparser.DuplicateSectionError:
@@ -152,12 +161,14 @@ class Gui():
             config.set('window', 'width', str(self.master.winfo_width()))
             config.set('window', 'posx', str(self.master.winfo_x()))
             config.set('window', 'posy', str(self.master.winfo_y()))
+            config.set('status window', 'enabled', str(bool(self.status_window)))
             self.log.debug('Done gathering close down info, saving...')
             os.makedirs(self.data_path, exist_ok=True)
             with open(self.config_path, 'w') as fh:
                 config.write(fh)
                 self.log.debug(f'Close down info written to: {self.config_path}')
             with open(os.path.join(self.data_path, 'startup_info.dat'), 'bw') as fh:
+                self.log.info(self.settings)
                 pickle.dump({'main': {'settings': self.settings},
                              'playlists': self.playlist.on_close()},
                             fh)
